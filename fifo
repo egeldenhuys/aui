@@ -502,8 +502,15 @@ format_partitions(){
 install_base_system(){
   print_title "INSTALL BASE SYSTEM"
 
-  print_info "Installing the base system by copying all files from live environment..."
-  cp -avx / ${MOUNTPOINT}
+  print_info "Installing the base system by copying all files from live environment."
+  print_info "This may take a while..."
+
+  print_info "Here are some moving dots to keep you calm"
+  bash ./calm.sh &
+  calmPid=$!
+
+  cp -ax / ${MOUNTPOINT}
+  kill -9 $calmPid
 
   print_info "Copying the kernel image to keep the integrity of the new system"
   cp -vaT /run/archiso/bootmnt/arch/boot/$(uname -m)/vmlinuz ${MOUNTPOINT}/boot/vmlinuz-linux
