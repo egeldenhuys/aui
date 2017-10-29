@@ -503,34 +503,33 @@ install_base_system(){
   print_title "INSTALL BASE SYSTEM"
 
   print_info "Installing the base system by copying all files from live environment..."
-  cp -ax / ${MOUNTPOINT}
+  cp -avx / ${MOUNTPOINT}
 
   print_info "Copying the kernel image to keep the integrity of the new system"
   cp -vaT /run/archiso/bootmnt/arch/boot/$(uname -m)/vmlinuz ${MOUNTPOINT}/boot/vmlinuz-linux
 
-  print_info "chrooting into the new system to remove traces of the live system"
-  arch-chroot ${MOUNTPOINT} /bin/bash
+  print_info "Removing traces of the live environment"
 
   print_info "1) Restore the configuration of journald"
-  sed -i 's/Storage=volatile/#Storage=auto/' /etc/systemd/journald.conf
+  arch-chroot ${MOUNTPOINT} sed -i 's/Storage=volatile/#Storage=auto/' /etc/systemd/journald.conf
 
   print_info "2) Remove special udev rule"
-  rm /etc/udev/rules.d/81-dhcpcd.rules
+  arch-chroot ${MOUNTPOINT} rm /etc/udev/rules.d/81-dhcpcd.rules
 
   print_info "3) Disable and remove the services created by archiso"
-  systemctl disable pacman-init.service choose-mirror.service
-  rm -r /etc/systemd/system/{choose-mirror.service,pacman-init.service,etc-pacman.d-gnupg.mount,getty@tty1.service.d}
-  rm /etc/systemd/scripts/choose-mirror
+  arch-chroot ${MOUNTPOINT} systemctl disable pacman-init.service choose-mirror.service
+  arch-chroot ${MOUNTPOINT} rm -r /etc/systemd/system/{choose-mirror.service,pacman-init.service,etc-pacman.d-gnupg.mount,getty@tty1.service.d}
+  arch-chroot ${MOUNTPOINT} rm /etc/systemd/scripts/choose-mirror
 
   print_info "4) Remove special scripts of the Live environment"
-  rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
-  rm /root/{.automated_script.sh,.zlogin}
-  rm /etc/mkinitcpio-archiso.conf
-  rm -r /etc/initcpio
+  arch-chroot ${MOUNTPOINT} rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
+  arch-chroot ${MOUNTPOINT} rm /root/{.automated_script.sh,.zlogin}
+  arch-chroot ${MOUNTPOINT} rm /etc/mkinitcpio-archiso.conf
+  arch-chroot ${MOUNTPOINT} rm -r /etc/initcpio
 
   print_info "5) Importing archlinux keys"
-  pacman-key --init
-  pacman-key --populate archlinux
+  arch-chroot ${MOUNTPOINT} pacman-key --init
+  arch-chroot ${MOUNTPOINT} pacman-key --populate archlinux
 
 }
 #}}}
